@@ -1,45 +1,88 @@
 import Button from 'react-bootstrap/Button';
-import Card from 'react-bootstrap/Card';
-import data from './data.json';
-import { useState } from 'react';
+import { Form } from 'react-bootstrap';
+import {useEffect, useState } from 'react';
 import CardComp from './card';
 
 
 function Main(){
 
-    let [items, setIteams] = useState(data);
+    let [items, setMeals] = useState([]);
 
-    function handleSubmit(event){
+    async function getData(){
+
+        const url = 'https://www.themealdb.com/api/json/v1/1/search.php?f=m';
+        
+          const response = await fetch(url);
+          const result = await response.json();
+          console.log(result.meals)
+          setMeals(result.meals) 
+    
+    }
+    
+    useEffect(function(){
+        getData()
+    },[])
+
+    async function handleSubmit(event){
         event.preventDefault()
         let searchedValue = event.target.search.value
-
-        let filteredIteams = data.filter(function(item){return  item.title.toLowerCase().includes(searchedValue.toLowerCase() )})
-        setIteams(filteredIteams);
+        let response = await fetch('https://www.themealdb.com/api/json/v1/1/search.php?s='+searchedValue);
+        let data = await response.json();
+        let filteredItems = data.meals.filter(function(item){return item.strMeal.toLowerCase().includes(searchedValue.toLowerCase() )})
+        setMeals(filteredItems)
+  
 
     }
 
+  
+
+    
+ 
 
     return(
-        <>
-        <div>
-        <form onSubmit={handleSubmit}>
-            <input type="text" name="search"/>
-            <button type='submit'>Search</button>
-         </form>
+<>
+<Form className="d-flex"  id="myform" onSubmit={handleSubmit}>
+<Form.Control
+              type="search"
+              placeholder="Search"
+              className="me-2"
+              aria-label="Search"
+              name="search"
+              required
+              />
+<Button variant="outline-success" type='submit'>Search</Button>
+</Form>
+<div className="container" style={{display:"flex", flexWrap:"wrap", justifyContent:'20px', }}>
+    {1?console.log(items):console.log(1)}
+        {items.length !==0 ? items.map(function(item){
 
-        </div>
-        
-            <div style={{display:"flex", "flexWrap":"wrap", "justifyContent":"space-between", "gab":"20px"}}>
-                {items.map(function(item){
-                    return(
-                        <CardComp title={item.title} image={item.image_url} description={item.description}/>
-                        
-                        ) })}
-                    </div> 
-        </>
-          
-         
-   ); 
+            return(
+<>
+<CardComp image={item.strMealThumb}
+                 title={item.strMeal}
+
+                    description={item.strInstructions}
+
+                              Category={item.strCategory} />             
+</>
+            )
+        }
+    ) : <h3>No search results</h3>}
+</div>
+</>
+    )
 }
 
-export default Main;
+ export default Main;
+
+
+
+ 
+
+
+
+ 
+
+ 
+
+ 
